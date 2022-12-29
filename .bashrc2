@@ -1,0 +1,161 @@
+# .bashrc2
+export PATH=$PATH:~/bashuserenv/kyrat/bin
+export HISTTIMEFORMAT="%d/%m/%y %T "
+alias ll="ls -lah"
+
+
+
+## Please set your LDAP Username
+USERNAME="crobin"
+
+#Function to edit and reload bashrc easily
+function brc { vim ~/.bashrc ; source ~/.bashrc ; echo "Bash Reloaded" ; } ;
+function brc2 { vim ~/bashuserenv/.bashrc2 ; source ~/.bashrc ; source ~/bashuserenv/.bashrc2 ; echo "Bash Reloaded" ; } ;
+
+#Command to access Unix Jumpbox easier
+alias unix="ssh $USERNAME@unix.codero.com -p 22"
+alias nms="ssh $USERNAME@69.64.66.2 -p 222"
+alias networking="ssh $USERNAME@69.64.66.2 -p 222"
+
+#Opens Socks5 Proxy on 8080 to the Destination IP in $1
+#In browser put localhost and port 8080 under Socks5 Proxy settings
+function socks () { ssh -oHostKeyAlgorithms=+ssh-dss -D 8080 root@$1 ; }
+
+#Opens Tunnel From $1 to Port 9999 on Unix Jumpbox
+function tunnel () { ssh -L $1:localhost:9999 $USERNAME@unix.codero.com ; }
+
+#Function to delete known_host entries when trying to SSH
+function dssh () { if [ -z ${1} ] ; then echo -e "\nUsed to remove a Domain or IP from known_hosts -\dssh 8.8.8.8\n" ; else ssh-keygen -R $1  ; fi } ;
+function srm () { if [ -z ${1} ] ; then echo -e "\nUsed to remove a Domain or IP from known_hosts -\dssh 8.8.8.8\n" ; else ssh-keygen -R $1  ; fi } ;
+
+#Alias to edit hosts file on Windows
+alias hosts="vim /c/windows/system32/drivers/etc/hosts"
+
+#Outputs your IP
+alias ip="curl ifconfig.io"
+
+#Disk Space Usage For Current Directory
+alias disk="find . -maxdepth 1 -exec du -shc {} \; | sed '/total/ d' | sort -hr"
+
+#Pulls the SSL Information for Host and Port
+function ssls () { echo | openssl s_client -servername $1 -connect $1:$2 ; }
+
+#Pulls the Expiration Date for SSL on Host and Port
+function ssldates () { echo | openssl s_client -servername $1 -connect $1:$2 2>/dev/null | openssl x509 -noout -dates ; }
+
+#Quickly test local bandwidth throughput
+alias speed='echo;echo "Testing Speeds...";curl -s https://raw.githubusercontent.com/sivel/speedtest-cli/master/speedtest.py | python -|grep "Download\|Upload"'
+alias speeds='echo;echo "Testing Speeds...";curl -s https://raw.githubusercontent.com/sivel/speedtest-cli/master/speedtest.py | python -|grep "Download\|Upload"'
+alias speedtest='echo;echo "Testing Speeds...";curl -s https://raw.githubusercontent.com/sivel/speedtest-cli/master/speedtest.py | python -|grep "Download\|Upload"'
+
+
+# Windows Specific
+
+#Edits Hosts file
+alias hosts="vim /c/windows/system32/drivers/etc/hosts"
+
+###################################################################################################
+
+#Pulls DNS for a given domain
+function dns () {
+DOM="$1"
+NSNS="`dig NS $1 +short`"
+ADNS=("`dig A $1 +short`")
+CDNS="`dig A www.$1 +short`"
+MDNS="`dig MX $1 +short`"
+TXT="`dig TXT $1 +short|grep -iv spf | grep -v dkim`"
+SPF="`dig TXT $1 +short|grep -i spf`"
+DKIM="`dig TXT default._domainkey.$1 +short|grep -i DKIM`"
+
+
+echo -e "\nName Servers for $DOM:\n$NSNS"
+echo -e "\nA Record for $DOM:\n$ADNS"
+echo -e "\nWWW Record for $DOM:\n$CDNS"
+echo -e "\nRDNS for $DOM:"
+declare -a arr=($(dig A $DOM +short)) ; for i in ${arr[@]} ; do echo "$i > `dig -x $i +short`" ; done
+echo -e "\n\nMX Records for $DOM:\n$MDNS"
+echo -e "\nTXT Record for $DOM:\n$TXT"
+echo -e "\nSPF Records for $DOM:\n$SPF"
+echo -e "\nDKIM default for $DOM:\n$DKIM"
+}
+
+###################################################################################################
+
+#Tests remote IP for listening ports
+function isup () {
+echo $1 | while read IP
+do
+echo
+IP=$1;
+RD='\033[0;31m'
+GR='\033[0;32m'
+NC='\033[0m'
+ICMP_ENABLED=$(ping -c2 -W1 $IP &>/dev/null && echo 'ICMP' || echo 'DOWN');
+if [[ $ICMP_ENABLED =~ 'DOWN' ]]
+then
+SERVICE_STATUS=$(nmap -T4 -Pn -p 22,3389,80,443,10222,2083,2087,8443 $IP | grep -m1 'open' | awk '{print $1}');
+if [[ -z "$SERVICE_STATUS" ]]
+then
+echo -e "${RD}*** $IP is DOWN ***${NC}";
+else
+echo -e "${GR}~~~ $IP is UP ~~~${NC}";
+fi
+else
+echo -e "${GR}~~~ $IP is UP ~~~${NC}";
+fi
+echo
+done
+}
+
+###################################################################################################
+
+# Aliases for quicker use
+
+#Normal SSH
+alias s="jump"
+
+#SSH with old ciphers
+alias o="ojump"
+
+# Variables
+jumpuser="$USERNAME"
+
+function jump () {
+        if [[ -z $1 ]]; then
+                ssh ${jumpuser}@unix.codero.com
+        elif [[ -n $1 && -z $2 ]]; then
+                ssh -t -o ProxyCommand="ssh ${jumpuser}@unix.codero.com nc $1 22" root@$1
+        elif [[ -n $1 && -n $2 ]]; then
+                ssh -t -o ProxyCommand="ssh ${jumpuser}@unix.codero.com nc $1 $2" root@$1
+        else
+                echo -e '\nSyntax Error'
+        fi
+}
+
+function ojump () {
+        if [[ -z $1 ]]; then
+                ssh ${jumpuser}@unix.codero.com
+        elif [[ -n $1 && -z $2 ]]; then
+                ssh -oHostKeyAlgorithms=+ssh-dss -t -o ProxyCommand="ssh ${jumpuser}@unix.codero.com nc $1 22" root@$1
+        elif [[ -n $1 && -n $2 ]]; then
+                ssh -oHostKeyAlgorithms=+ssh-dss -t -o ProxyCommand="ssh ${jumpuser}@unix.codero.com nc $1 $2" root@$1
+        else
+                echo -e '\nSyntax Error'
+        fi
+}
+
+###################################################################################################
+
+#Tests speeds on remote linux server
+function spd () {
+if [[ -z $1 ]]; then
+echo -e "\nPlease login to test internet speeds for $1"
+ssh root@$1 'echo ; curl -s https://raw.githubusercontent.com/sivel/speedtest-cli/master/speedtest.py | python -|grep "Download\|Upload"'
+echo
+else
+echo "Please provide a Domain or IP"
+fi
+}
+
+###################################################################################################
+
