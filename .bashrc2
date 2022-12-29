@@ -111,6 +111,9 @@ done
 
 # Aliases for quicker use
 
+#kyrat ssh
+alias ssh2="kyrat"
+
 #Normal SSH
 alias s="jump"
 
