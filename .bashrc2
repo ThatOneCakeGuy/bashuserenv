@@ -1,0 +1,51 @@
+# .bashrc2
+export HISTTIMEFORMAT="%d/%m/%y %T "
+alias ll="ls -lah"
+for f in ~/bashuserenv/scripts/* ; do source $f ; done
+USERNAME="crobin"
+
+#Function to edit and reload bashrc easily
+function brc { vim ~/.bashrc ; source ~/.bashrc ; echo "Bash Reloaded" ; } ;
+function brc2 { vim ~/bashuserenv/.bashrc2 ; source ~/.bashrc ; source ~/bashuserenv/.bashrc2 ; echo "Bash Reloaded" ; } ;
+
+#Command to access Unix Jumpbox easier
+alias unix="ssh $USERNAME@unix.codero.com -p 22"
+alias nms="ssh $USERNAME@69.64.66.2 -p 222"
+alias networking="ssh $USERNAME@69.64.66.2 -p 222"
+
+#Opens Socks5 Proxy on 8080 to the Destination IP in $1
+#In browser put localhost and port 8080 under Socks5 Proxy settings
+function socks () { ssh -oHostKeyAlgorithms=+ssh-dss -D 8080 root@$1 ; }
+
+#Opens Tunnel From $1 to Port 9999 on Unix Jumpbox
+function tunnel () { ssh -L $1:localhost:9999 $USERNAME@unix.codero.com ; }
+
+#Function to delete known_host entries when trying to SSH
+function dssh () { if [ -z ${1} ] ; then echo -e "\nUsed to remove a Domain or IP from known_hosts -\dssh 8.8.8.8\n" ; else ssh-keygen -R $1  ; fi } ;
+function srm () { if [ -z ${1} ] ; then echo -e "\nUsed to remove a Domain or IP from known_hosts -\dssh 8.8.8.8\n" ; else ssh-keygen -R $1  ; fi } ;
+
+#Alias to edit hosts file on Windows
+alias hosts="vim /c/windows/system32/drivers/etc/hosts"
+
+#Outputs your IP
+alias ip="curl ifconfig.io"
+
+#Disk Space Usage For Current Directory
+alias disk="find . -maxdepth 1 -exec du -shc {} \; | sed '/total/ d' | sort -hr"
+
+#Pulls the SSL Information for Host and Port
+function ssls () { echo | openssl s_client -servername $1 -connect $1:$2 ; }
+
+#Pulls the Expiration Date for SSL on Host and Port
+function ssldates () { echo | openssl s_client -servername $1 -connect $1:$2 2>/dev/null | openssl x509 -noout -dates ; }
+
+#Quickly test local bandwidth throughput
+alias speed='echo;echo "Testing Speeds...";curl -s https://raw.githubusercontent.com/sivel/speedtest-cli/master/speedtest.py | python -|grep "Download\|Upload"'
+alias speeds='echo;echo "Testing Speeds...";curl -s https://raw.githubusercontent.com/sivel/speedtest-cli/master/speedtest.py | python -|grep "Download\|Upload"'
+alias speedtest='echo;echo "Testing Speeds...";curl -s https://raw.githubusercontent.com/sivel/speedtest-cli/master/speedtest.py | python -|grep "Download\|Upload"'
+
+
+# Windows Specific
+
+#Edits Hosts file
+alias hosts="vim /c/windows/system32/drivers/etc/hosts"
