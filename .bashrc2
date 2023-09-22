@@ -1,12 +1,9 @@
 # .bashrc2
-export PATH=$PATH:~/bashuserenv/kyrat/bin
 export HISTTIMEFORMAT="%d/%m/%y %T "
 alias ll="ls -lah"
 
-
-
 ## Please set your LDAP Username
-USERNAME="crobin"
+USERNAME="$YourUserHere"
 
 #Function to edit and reload bashrc easily
 function brc { vim ~/.bashrc ; source ~/.bashrc ; echo "Bash Reloaded" ; } ;
@@ -110,9 +107,6 @@ done
 ###################################################################################################
 
 # Aliases for quicker use
-
-#kyrat ssh
-alias ssh2="kyrat"
 
 #Normal SSH
 alias s="jump"
